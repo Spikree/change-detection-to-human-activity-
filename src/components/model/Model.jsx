@@ -1,109 +1,73 @@
-import React, { useRef, useState } from 'react'
-import './Model.css'
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
-const Model = () => {
-    const [oldImage, setOldImage] = useState(null);
-    const [newImage, setNewImage] = useState(null);
-    const oldImageRef = useRef();
-    const newImageRef = useRef();
+const ImageUploader = () => {
+  const [oldImage, setOldImage] = useState(null);
+  const [newImage, setNewImage] = useState(null);
+  const [response, setResponse] = useState(null);
 
-    const url = import.meta.env.VITE_BACKEND_URL;
-
-    const handleImageChange = (e, setImage) => {
-        const file = e.target.files[0];
-        if (file) {
-            setImage(URL.createObjectURL(file));
-        }
-    };
-
-    const handleOldImageUpload = (e) => {
-        e.preventDefault();
-        oldImageRef.current.click();
-    };
-
-    const handleNewImageUpload = (e) => {
-        e.preventDefault();
-        newImageRef.current.click();
-    };
-
-    const process = async (e) => {
-
-        e.preventDefault();
-
-        const formData = new FormData();
-        formData.append('oldImage', oldImage);
-        formData.append('newImage', newImage);
-
-        try {
-            const response = await axios.post(url, formData, {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            });
-            console.log('Response:', response.data);   
-          } catch (error) {
-            console.error('Error:', error);
-          }
+  const handleImageChange = (e, setImage) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
     }
+  };
 
-    return (
-        <div className='model'>
-            <div className="header">
-                <p>Upload images you want to detect change for</p>
-            </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-            <div className='model-inner'>
+    const formData = new FormData();
+    formData.append("image1", oldImage);
+    formData.append("image2", newImage);
 
-            <div className="image-input">
-                <form onSubmit={(e) => process(e)}>
-                    <div className="old-image">
-                        <label>Image 1 :</label>
-                        <input 
-                            ref={oldImageRef}
-                            type="file" 
-                            onChange={(e) => handleImageChange(e, setOldImage)} 
-                            style={{display:"none"}}
-                            name='image1'
-                        />
-                        <button onClick={(e) => handleOldImageUpload(e)}>Image 1</button>
-                    </div>
+    try {
+      const res = await axios.post(
+        "https://change-detection-due-to-human-activities.onrender.com/process",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setResponse(res.data);
+      console.log(res.data);
+    } catch (error) {
+      console.error("Error uploading images:", error);
+    }
+  };
 
-                    <div className="new-image">
-                        <label>Image 2 :</label>
-                        <input 
-                        ref={newImageRef}
-                            type="file" 
-                            onChange={(e) => handleImageChange(e, setNewImage)} 
-                            style={{display:"none"}}
-                            name='image2'
-                        />
-                        <button onClick={(e) => handleNewImageUpload(e)}>Image 2</button>
-                    </div>
-
-                    <button>Submit</button>
-                </form>
-            </div>
-
-           
-
-            <div className="image-preview">
-                <div className="image-old">
-                    <img src={oldImage} alt="" />
-                </div>
-
-                <div className="image-new">
-                    <img src={newImage} alt="" />
-                </div>
-            </div>
-            </div>
-
-            <div className="changes">
-                <h1>Changes detected</h1>
-                <img src="" alt="" />
-            </div>
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Image 1:</label>
+          <input
+            type="file"
+            onChange={(e) => handleImageChange(e, setOldImage)}
+          />
         </div>
-    );
+        <div>
+          <label>Image 2:</label>
+          <input
+            type="file"
+            onChange={(e) => handleImageChange(e, setNewImage)}
+          />
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+      {response && (
+        <div>
+          <h2>OutPut</h2>
+          <img src={response?.image1_url} alt="" />
+          <br />
+          <img src={response?.image2_url} alt="" />
+          <br />
+          <img src={response.change_map_url} alt="" />
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default Model;
+export default ImageUploader;
