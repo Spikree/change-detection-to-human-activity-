@@ -5,7 +5,7 @@ const ImageUploader = () => {
   const [oldImage, setOldImage] = useState(null);
   const [newImage, setNewImage] = useState(null);
   const [response, setResponse] = useState(null);
-
+  const [btnTest, setBtnText] = useState("Submit");
   const handleImageChange = (e, setImage) => {
     const file = e.target.files[0];
     if (file) {
@@ -15,7 +15,7 @@ const ImageUploader = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setBtnText("Uploading...");
     const formData = new FormData();
     formData.append("image1", oldImage);
     formData.append("image2", newImage);
@@ -31,6 +31,7 @@ const ImageUploader = () => {
         }
       );
       setResponse(res.data);
+      setBtnText("completed");
       console.log(res.data);
     } catch (error) {
       console.error("Error uploading images:", error);
@@ -54,7 +55,7 @@ const ImageUploader = () => {
             onChange={(e) => handleImageChange(e, setNewImage)}
           />
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit">{btnTest}</button>
       </form>
       {response && (
         <div>
